@@ -1,0 +1,46 @@
+name: Henko CI Demo
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+
+jobs:
+  ci-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Lint simulado
+        run: echo "lint ok" > lint.txt
+
+      - name: Pruebas simuladas
+        run: |
+          echo "pruebas ok" > junit.xml
+          echo "Evidencia E2E basica" > evidencia-e2e.txt
+
+      - name: Publicar artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidencia
+          path: |
+            lint.txt
+            junit.xml
+            evidencia-e2e.txt
+
+  paquete-demo:
+    needs: ci-checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Crear build de demo
+        run: |
+          mkdir -p web/dist
+          echo "<h1>Henko build demo</h1>" > web/dist/index.html
+          zip -r web-dist.zip web/dist
+      - name: Publicar build
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: web-dist.zip
